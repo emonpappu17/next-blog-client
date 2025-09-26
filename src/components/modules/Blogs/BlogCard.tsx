@@ -43,6 +43,7 @@ export default function BlogCard({ post }: { post: any }) {
                 alt={post.author.name}
                 width={36}
                 height={36}
+                // fill
                 className="rounded-full border-2 border-gray-200 dark:border-gray-700"
               />
               <span className="text-gray-600 dark:text-gray-300 text-sm flex items-center gap-1">
