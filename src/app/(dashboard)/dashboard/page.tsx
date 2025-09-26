@@ -1,7 +1,4 @@
-import { authOptions } from "@/helpers/authOptions";
 import { getUserSession } from "@/helpers/getUserSession";
-import { getServerSession } from "next-auth";
-import Image from "next/image";
 
 const DashboardHome = async () => {
   const quote = "The secret of getting ahead is getting started. – Mark Twain";
@@ -9,7 +6,7 @@ const DashboardHome = async () => {
   const session = await getUserSession();
   // const session = await getServerSession(authOptions);
 
-  // console.log(session);
+  console.log(session?.user?.id);
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 p-6 w-full">
       {/* <img src={session?.user?.image} alt="" /> */}

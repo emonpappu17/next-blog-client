@@ -18,6 +18,7 @@ import Image from "next/image";
 // import { login } from "@/actions/auth";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
+import { login } from "@/actions/auth";
 
 // type LoginFormValues = {
 //   email: string;
@@ -40,10 +41,12 @@ export default function LoginForm() {
             // } else {
             //   toast.error("User Login Failed");
             // }
-            // signIn("credentials", {
-            //     ...values,
-            //     callbackUrl: "/dashboard",
-            // });
+
+            
+            signIn("credentials", {
+                ...values,
+                callbackUrl: "/dashboard",
+            });
         } catch (err) {
             console.error(err);
         }
