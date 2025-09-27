@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
@@ -52,7 +53,7 @@ export const authOptions: NextAuthOptions = {
                         })
                     });
 
-                    console.log('res from backend:', res);
+                    // console.log('res from backend:', res);
 
                     if (!res?.ok) {
                         console.log("Login failed", await res.text());
@@ -66,7 +67,8 @@ export const authOptions: NextAuthOptions = {
                             id: user?.id,
                             name: user?.name,
                             email: user?.email,
-                            image: user?.picture
+                            image: user?.picture,
+                            role: user?.role
                         }
                     } else {
                         return null
@@ -80,20 +82,93 @@ export const authOptions: NextAuthOptions = {
         })
     ],
     callbacks: {
+        // async signIn({ user, account, profile, email, credentials }) {
+        //     if (account?.provider === "google") {
+        //         try {
+        //             const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/auth/google`, {
+        //                 method: "POST",
+        //                 headers: {
+        //                     "Content-Type": "application/json"
+        //                 },
+        //                 body: JSON.stringify({
+        //                     googleId: user?.id,
+        //                     email: user.email,
+        //                     name: user?.name,
+        //                     picture: user.image
+        //                 })
+        //             });
+        //             const dbUser = await res.json();
+        //             console.log('res from google db store:', dbUser);
+        //             // return dbUser
+        //             (user as any).role = dbUser.role;
+        //             return
+        //         } catch (error) {
+        //             console.log('error inside signIn==>', error);
+        //         }
+        //     }
+
+        //     // console.log('inside signin user==>', user);
+        //     // console.log('inside signin account==>', account);
+        //     // console.log('inside signin profile==>', profile);
+        //     // console.log('inside signin email==>', email);
+        //     // console.log('inside signin credentials==>', credentials);
+        //     return true;
+        // },
+
+        async signIn({ user, account }) {
+            if (account?.provider === "google") {
+                try {
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_API}/auth/google`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            googleId: user.id,
+                            email: user.email,
+                            name: user.name,
+                            picture: user.image,
+                        }),
+                    });
+
+                    const dbUser = await res.json();
+
+                    // attach role so jwt can pick it up
+                    (user as any).role = dbUser.role;
+
+                    return true;
+                } catch (err) {
+                    console.error("Error storing Google user:", err);
+                    return false;
+                }
+            }
+            return true;
+        },
         async jwt({ token, user }) {
+            console.log('jwt token==>', token);
+            // console.log('jwt user==>', user);
             if (user) {
-                token.id = user?.id
+                token.id = user?.id;
+                token.role = (user as any)?.role
             }
             return token
         },
         async session({ session, token }) {
+            // console.log('session==>', session);
+            console.log('token==>', token);
             if (session?.user) {
                 session.user.id = token?.id as string;
+                (session.user as any).role = token.role;
             }
             return session
         },
-        // async signIn({ user, account }) {
 
+        // async redirect({ url, baseUrl }) {
+        //     console.log('url==>', url);
+        //     console.log('baseurl==>', baseUrl);
+        //     // // Allows relative callback URLs
+        //     // if (url.startsWith("/")) return `${baseUrl}${url}`
+        //     // // Allows callback URLs on the same origin
+        //     // else if (new URL(url).origin === baseUrl) return url
+        //     return `${baseUrl}/blogs`
         // }
     },
     secret: process.env.AUTH_SECRET,
